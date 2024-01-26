@@ -1,0 +1,38 @@
+{
+  "name": "my_pjt1",
+  "version": "1.0.0",
+  "description": "my first phoenix liveview project",
+  "main": "tailwind.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "webpack --mode production"
+  },
+  "author": "Yong gon Yun",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/y2gon2/my_pjt1.git"
+  },
+  "keywords": [
+    "phoenix"
+  ],
+  "homepage": "https://github.com/y2gon2/my_pjt1#readme",
+  "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "autoprefixer": "^10.4.17",
+    "babel-loader": "^9.1.3",
+    "css-loader": "^6.9.1",
+    "mini-css-extract-plugin": "^2.7.7",
+    "postcss": "^8.4.33",
+    "style-loader": "^3.3.4",
+    "tailwindcss": "^3.4.1",
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "phoenix": "^1.7.10",
+    "phoenix_html": "^4.0.0",
+    "phoenix_live_view": "^0.20.3"
+  }
+}
