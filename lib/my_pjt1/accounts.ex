@@ -80,6 +80,12 @@ defmodule MyPjt1.Accounts do
     |> Repo.insert()
   end
 
+  def update_nickname(%User{} = user, attrs) do
+    user
+    |> User.nickname_changeset(attrs)
+    |> Repo.update()
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking user changes.
 

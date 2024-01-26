@@ -55,7 +55,6 @@ defmodule MyPjt1Web.UserRegistrationLive do
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
-    IO.inspect(user_params, label: "zzz")
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         {:ok, _} =

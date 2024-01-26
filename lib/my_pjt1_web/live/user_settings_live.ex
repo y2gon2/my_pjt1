@@ -1,5 +1,6 @@
 defmodule MyPjt1Web.UserSettingsLive do
   use MyPjt1Web, :live_view
+  require Logger
 
   alias MyPjt1.Accounts
 
@@ -7,29 +8,26 @@ defmodule MyPjt1Web.UserSettingsLive do
     ~H"""
     <.header class="text-center">
       Account Settings
-      <:subtitle>Manage your account email address and password settings</:subtitle>
     </.header>
 
     <div class="space-y-12 divide-y">
       <div>
         <.simple_form
-          for={@email_form}
-          id="email_form"
-          phx-submit="update_email"
-          phx-change="validate_email"
+          for={@nickname_form}
+          id="nickname_form"
+          phx-submit="update_nickname"
         >
-          <.input field={@email_form[:email]} type="email" label="Email" required />
-          <.input
-            field={@email_form[:current_password]}
+          <.input field={@nickname_form[:nickname]} label="Nickname" required />
+          <%!-- <.input
+            field={@nickname_form[:current_password]}
             name="current_password"
-            id="current_password_for_email"
+            id="current_password_for_nickname"
             type="password"
             label="Current password"
-            value={@email_form_current_password}
             required
-          />
+          /> --%>
           <:actions>
-            <.button phx-disable-with="Changing...">Change Email</.button>
+            <.button phx-disable-with="Changing...">Change Nickname</.button>
           </:actions>
         </.simple_form>
       </div>
@@ -73,22 +71,8 @@ defmodule MyPjt1Web.UserSettingsLive do
     """
   end
 
-  def mount(%{"token" => token}, _session, socket) do
-    socket =
-      case Accounts.update_user_email(socket.assigns.current_user, token) do
-        :ok ->
-          put_flash(socket, :info, "Email changed successfully.")
-
-        :error ->
-          put_flash(socket, :error, "Email change link is invalid or it has expired.")
-      end
-
-    {:ok, push_navigate(socket, to: ~p"/users/settings")}
-  end
-
   def mount(_params, _session, socket) do
     user = socket.assigns.current_user
-    email_changeset = Accounts.change_user_email(user)
     password_changeset = Accounts.change_user_password(user)
 
     socket =
@@ -96,44 +80,34 @@ defmodule MyPjt1Web.UserSettingsLive do
       |> assign(:current_password, nil)
       |> assign(:email_form_current_password, nil)
       |> assign(:current_email, user.email)
-      |> assign(:email_form, to_form(email_changeset))
+      |> assign(:nickname_form, to_form(%{"nickname" => socket.assigns.current_user.nickname, "current_password" => nil}))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
   end
 
-  def handle_event("validate_email", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
+  def handle_event("update_nickname", %{"nickname" => nickname}, socket) do
+    IO.inspect(socket.assigns.current_user, label: "zzzz")
 
-    email_form =
-      socket.assigns.current_user
-      |> Accounts.change_user_email(user_params)
-      |> Map.put(:action, :validate)
-      |> to_form()
+    case Accounts.update_nickname(socket.assigns.current_user, %{"email" => socket.assigns.current_user.email, "nickname" => nickname}) do
+      {:ok, user} ->
+        notify_parent({:saved, user})
+        Logger.info("success???????")
 
-    {:noreply, assign(socket, email_form: email_form, email_form_current_password: password)}
-  end
+        {:noreply,
+          socket
+          |> put_flash(:info, "User infomation updated successfully")
+          |> push_navigate(to: "/")
+        }
 
-  def handle_event("update_email", params, socket) do
-    %{"current_password" => password, "user" => user_params} = params
-    user = socket.assigns.current_user
-
-    case Accounts.apply_user_email(user, password, user_params) do
-      {:ok, applied_user} ->
-        Accounts.deliver_user_update_email_instructions(
-          applied_user,
-          user.email,
-          &url(~p"/users/settings/confirm_email/#{&1}")
-        )
-
-        info = "A link to confirm your email change has been sent to the new address."
-        {:noreply, socket |> put_flash(:info, info) |> assign(email_form_current_password: nil)}
-
-      {:error, changeset} ->
-        {:noreply, assign(socket, :email_form, to_form(Map.put(changeset, :action, :insert)))}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        Logger.info("fail???????")
+        {:noreply, assign_form(socket, changeset)}
     end
+
   end
+
 
   def handle_event("validate_password", params, socket) do
     %{"current_password" => password, "user" => user_params} = params
@@ -164,4 +138,11 @@ defmodule MyPjt1Web.UserSettingsLive do
         {:noreply, assign(socket, password_form: to_form(changeset))}
     end
   end
+
+
+  defp assign_form(socket, %Ecto.Changeset{} = changeset) do
+    assign(socket, :form, to_form(changeset))
+  end
+
+  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

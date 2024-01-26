@@ -26,16 +26,16 @@
     </li>
     <li style="flex-grow: 1;"></li>
     <%= if @current_user do %>
-      <li class="text-[0.75rem] leading-6 text-zinc-500">
-        Hello! <%= @current_user.nickname %>
-      </li>
       <li>
         <.link
           href={~p"/users/settings"}
           class="text-[0.8125rem] leading-6 text-zinc-500 font-semibold hover:text-zinc-700"
         >
-          Settings
+          <i class="fa-solid fa-user"></i>
         </.link>
+      </li>
+      <li class="text-[0.75rem] leading-6 text-zinc-500">
+        Hello! <%= @current_user.nickname %>
       </li>
       <li>
         <.link
